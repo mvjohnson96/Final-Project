@@ -1,6 +1,6 @@
-# 🛡️ Honeypot Security Automation Project
+#Honeypot Security Automation Project
 
-## 📌 Project Overview
+##Project Overview
 
 This project implements a basic **honeypot** using Python on a **Windows Server 2019** environment. Its purpose is to simulate a vulnerable system to attract, log, and analyze unauthorized access attempts. A secondary **Windows 11 laptop** is used to simulate attacks for testing purposes.
 
@@ -8,7 +8,7 @@ This project supports cybersecurity learning objectives by providing hands-on ex
 
 ---
 
-## 🎯 Objectives
+##Objectives
 
 - Build and deploy a Python-based honeypot on Windows Server 2019.
 - Simulate threat actor behavior using a Windows 11 client machine.
@@ -18,7 +18,7 @@ This project supports cybersecurity learning objectives by providing hands-on ex
 
 ---
 
-## 🚀 Getting Started
+##Getting Started
 
 ### Prerequisites
 
