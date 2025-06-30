@@ -1,48 +1,61 @@
-#Honeypot Security Automation Project
+import socket
+import logging
+import threading
+import requests
 
-##Project Overview
+# Configure logging
+logging.basicConfig(
+    filename='honeypot.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+)
 
-This project implements a basic **honeypot** using Python on a **Windows Server 2019** environment. Its purpose is to simulate a vulnerable system to attract, log, and analyze unauthorized access attempts. A secondary **Windows 11 laptop** is used to simulate attacks for testing purposes.
+HOST = '0.0.0.0'
+PORTS = [2222, 2323, 8080]  # Add more ports as needed
 
-This project supports cybersecurity learning objectives by providing hands-on experience with network security monitoring, automation scripting, and intrusion detection fundamentals.
+def get_geolocation(ip):
+    try:
+        response = requests.get(f"http://ip-api.com/json/{ip}", timeout=5)
+        data = response.json()
+        if data['status'] == 'success':
+            return f"{data['country']}, {data['regionName']}, {data['city']}"
+        else:
+            return "Unknown Location"
+    except Exception as e:
+        return "Geo lookup failed"
 
----
+def handle_client(conn, addr, port):
+    ip = addr[0]
+    geo = get_geolocation(ip)
+    logging.info(f"[{port}] Connection from {ip} ({geo})")
 
-##Objectives
+    conn.sendall(b"Unauthorized access is prohibited.\n")
+    try:
+        while True:
+            data = conn.recv(1024)
+            if not data:
+                break
+            logging.info(f"[{port}] {ip} sent: {data.decode().strip()}")
+            conn.sendall(b"Command not accepted.\n")
+    except Exception as e:
+        logging.error(f"[{port}] Error with {ip}: {e}")
+    finally:
+        conn.close()
 
-- Build and deploy a Python-based honeypot on Windows Server 2019.
-- Simulate threat actor behavior using a Windows 11 client machine.
-- Log incoming connection attempts and record them for future analysis.
-- Implement optional enhancements like port filtering and geolocation tracking.
-- Use AI tools to assist in design, coding, and debugging.
+def start_listener(port):
+    print(f"Honeypot listening on port {port}")
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((HOST, port))
+        s.listen()
+        while True:
+            conn, addr = s.accept()
+            threading.Thread(target=handle_client, args=(conn, addr, port), daemon=True).start()
 
----
+if __name__ == "__main__":
+    for port in PORTS:
+        threading.Thread(target=start_listener, args=(port,), daemon=True).start()
 
-##Getting Started
-
-### Prerequisites
-
-Ensure the following are installed on your system:
-
-- Windows Server 2019 with PowerShell 5.1+
-- Python 3.10+ (Download: https://www.python.org/downloads/)
-- Windows 11 client (for simulation)
-- Text editor (e.g., Notepad++, VS Code)
-- Optional: Git and GitHub CLI
-
-### Installation
-
-1. **Install Python on Windows Server 2019:**
-   - Download the installer from [python.org](https://www.python.org/)
-   - Add Python to PATH during setup
-   - Confirm installation:
-     ```powershell
-     python --version
-     ```
-
-2. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/yourusername/honeypot-security-project.git
-   cd honeypot-security-project
-
-   
+    # Keep main thread alive
+    while True:
+        pass
